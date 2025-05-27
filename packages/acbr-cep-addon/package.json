@@ -1,0 +1,43 @@
+{
+  "name": "@acbr/cep-addon",
+  "version": "1.0.0",
+  "description": "Node.js addon (N-API) para ACBrLibCEP - Consulta de CEP",
+  "main": "build/Release/acbr_cep.node",
+  "scripts": {
+    "install": "prebuild-install --strip || node-gyp rebuild",
+    "prebuild": "prebuild --strip --tag-libc glibc --platform linux --arch x64",
+    "prebuild:upload": "prebuild-upload --no-ci",
+    "build": "node-gyp rebuild"
+  },
+  "dependencies": {
+    "node-addon-api": "^8.0.0",
+    "prebuild-install": "^7.1.1"
+  },
+  "devDependencies": {
+    "prebuild": "^12.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "gypfile": true,
+  "binary": {
+    "module_name": "acbr_cep",
+    "module_path": "build/Release/",
+    "host": "https://github.com/your-repo/acbr-cep/releases/download/v1.0.0"
+  },
+  "files": [
+    "build/Release/*.node",
+    "binding.gyp",
+    "src/**/*"
+  ],
+  "keywords": [
+    "cep",
+    "acbr",
+    "addon",
+    "native",
+    "brasil",
+    "endereco"
+  ],
+  "author": "Lucas Candido",
+  "license": "MIT"
+} 

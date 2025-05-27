@@ -1,0 +1,36 @@
+# Arquivos de desenvolvimento
+.git
+.gitignore
+.npmignore
+*.log
+logs/
+
+# Arquivos de build
+build/Debug/
+build/*.mk
+build/*.Makefile
+build/*.gypi
+build/Makefile
+build/config.gypi
+
+# Arquivos de teste
+test/
+__tests__/
+*.test.js
+*.spec.js
+
+# Documentação e exemplos
+docs/
+examples/
+
+# Arquivos do editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Outros
+.DS_Store
+.env
+*.tmp
+*.temp 
