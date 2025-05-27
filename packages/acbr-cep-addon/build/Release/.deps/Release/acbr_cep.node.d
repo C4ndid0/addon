@@ -1,1 +1,0 @@
-cmd_Release/acbr_cep.node := c++ -bundle -undefined dynamic_lookup -Wl,-search_paths_first -mmacosx-version-min=10.7 -arch x86_64 -L./Release -stdlib=libc++  -o Release/acbr_cep.node Release/obj.target/acbr_cep/src/main.o Release/obj.target/acbr_cep/src/cep_adapter.o Release/nothing.a 
