@@ -1,0 +1,28 @@
+{
+  "name": "@acbr/nfse-addon",
+  "version": "1.0.0",
+  "description": "Node.js native addon for ACBrLibNFSe",
+  "main": "index.js",
+  "scripts": {
+    "install": "prebuild-install --strip || node-gyp rebuild",
+    "build": "prebuild --strip --tag-libc glibc --platform linux --arch x64",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "nfse",
+    "acbr",
+    "brasil",
+    "nota fiscal",
+    "servico"
+  ],
+  "author": "Lucas Candido",
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^8.0.0",
+    "prebuild-install": "^7.1.1"
+  },
+  "devDependencies": {
+    "prebuild": "^12.1.0",
+    "cmake-js": "^7.2.1"
+  }
+} 

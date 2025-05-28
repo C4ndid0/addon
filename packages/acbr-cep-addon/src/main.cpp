@@ -58,18 +58,17 @@ Napi::Value ConsultCep(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     
     try {
-        if (info.Length() < 2) {
-            throwError(env, "Argumentos insuficientes. Esperado: cep, responseData");
+        if (info.Length() < 1) {
+            throwError(env, "Argumento insuficiente. Esperado: cep");
             return env.Null();
         }
 
-        if (!info[0].IsString() || !info[1].IsString()) {
-            throwError(env, "Argumentos inválidos. Esperado: string, string");
+        if (!info[0].IsString()) {
+            throwError(env, "Argumento inválido. Esperado: string");
             return env.Null();
         }
 
         std::string cep = info[0].As<Napi::String>();
-        std::string responseData = info[1].As<Napi::String>();
         
         return Napi::String::New(env, cepBuscarPorCEP(cep));
     } catch (const std::exception& e) {

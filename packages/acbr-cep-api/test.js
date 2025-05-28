@@ -1,85 +1,57 @@
 // test_cep.js
-const path = require('path');
-const https = require('https');
+const ACBrCEP = require('./index');
 const fs = require('fs');
-const { initializeCEP, consultCep, finalizeCEP } = require('./build/Release/acbr_cep.node');
-
-// Configurações HTTPS para ViaCEP
-const VIACEP_CONFIG = {
-  hostname: 'viacep.com.br',
-  port: 443,
-  method: 'GET',
-  rejectUnauthorized: false,
-  ca: fs.readFileSync('/etc/ssl/certs/ca-certificates.crt'),
-  minVersion: 'TLSv1.2',
-  maxVersion: 'TLSv1.2',
-  ciphers: 'HIGH:!aNULL:!MD5'
-};
-
-async function consultViaCEP(cep) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      ...VIACEP_CONFIG,
-      path: `/ws/${cep}/json/`
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          if (jsonData.erro) {
-            reject(new Error('CEP não encontrado'));
-          } else {
-            resolve(jsonData);
-          }
-        } catch (error) {
-          reject(new Error(`Erro ao processar resposta do ViaCEP: ${error.message}`));
-        }
-      });
-    });
-
-    req.on('error', error => {
-      reject(new Error(`Erro na requisição ao ViaCEP: ${error.message}`));
-    });
-
-    req.end();
-  });
-}
+const path = require('path');
 
 async function testCEP() {
+  const cep = new ACBrCEP();
+
   try {
+    // Verificar ambiente
+    console.log('Verificando ambiente...');
+    console.log('Diretório atual:', process.cwd());
+    console.log('Conteúdo do diretório lib/Linux:');
+    console.log(fs.readdirSync(path.join(process.cwd(), 'lib/Linux')));
+    console.log('Variáveis de ambiente SSL:');
+    Object.keys(process.env).filter(key => key.includes('SSL')).forEach(key => {
+      console.log(`${key}=${process.env[key]}`);
+    });
+
     // Inicialização
-    const configPath = path.join(process.cwd(), 'acbr.ini');
-    console.log('Inicializando ACBrLibCEP com:', configPath);
-    const initResult = initializeCEP(configPath, '');
-    console.log('Status:', initResult);
+    console.log('\nInicializando ACBrLibCEP...');
+    cep.initialize();
+    console.log('ACBrLibCEP inicializada com sucesso!');
 
     // Teste com CEP válido
     const validCep = '01001000';
     console.log(`\nTestando CEP válido: ${validCep}`);
-    const response = await consultViaCEP(validCep);
-    console.log('Resposta:', JSON.stringify(response, null, 2));
-    
-    const processedResult = consultCep(validCep, JSON.stringify(response));
-    console.log('Resultado processado:', processedResult);
+    const endereco = cep.consultarCEP(validCep);
+    console.log('Resposta:', endereco);
 
     // Teste com CEP inválido
     const invalidCep = '00000000';
     console.log(`\nTestando CEP inválido: ${invalidCep}`);
     try {
-      await consultViaCEP(invalidCep);
+      cep.consultarCEP(invalidCep);
     } catch (error) {
       console.log('Erro esperado:', error.message);
     }
 
   } catch (error) {
-    console.error('Erro:', error.message);
+    console.error('Erro:', error);
+    console.error('Stack:', error.stack);
   } finally {
-    const finResult = finalizeCEP();
-    console.log('\nFinalização:', finResult);
+    console.log('\nFinalizando ACBrLibCEP...');
+    try {
+      cep.finalizar();
+      console.log('ACBrLibCEP finalizada!');
+    } catch (error) {
+      console.error('Erro ao finalizar:', error);
+    }
   }
 }
+
+// Configurar ambiente
+
 
 testCEP();

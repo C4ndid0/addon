@@ -1,54 +1,68 @@
-FROM node:20
+FROM sitespeedio/node:ubuntu-24-04-nodejs-20.15.1
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3 \
-    libgtk2.0-0 \
-    libx11-6 \
-    libx11-xcb1 \
-    libxcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxi6 \
-    libxrandr2 \
-    libxrender1 \
-    libxss1 \
-    libxtst6 \
-    ca-certificates \
-    libssl-dev \
-    openssl \
-    xvfb \
-    && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production
+ENV DISPLAY=:99
 
 WORKDIR /usr/src/app
 
-COPY . .
+# Instalando as dependências de build
+RUN apt update && apt install -y --no-install-recommends \
+    g++ \
+    make \
+    cmake \
+    python3
 
-# Create log directory with proper permissions
-RUN mkdir -p logs && \
-    touch logs/acbr_cep.log && \
-    chmod 777 logs && \
-    chmod 666 logs/acbr_cep.log
+# Instalando dependências do ACBrLib
+RUN echo "deb http://deb.debian.org/debian buster main contrib\n" >> /etc/apt/sources.list && \
+    apt install -y --no-install-recommends xvfb xauth
 
-# Update SSL certificates
-RUN update-ca-certificates
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    apt install -y \
+    perl \
+    ttf-mscorefonts-installer \
+    openssl \
+    libssl3 \
+    libssl-dev \
+    ca-certificates \
+    libxml2 \
+    libgtk2.0-0 && \
+    ln -s /usr/lib/x86_64-linux-gnu/libxml2.so.2 /usr/lib/libxml2.so
 
-# Install Node.js dependencies
+# Configurar OpenSSL
+COPY openssl.cnf /usr/lib/ssl/openssl.cnf
+
+# Instalar prebuild globalmente
+RUN npm install -g prebuild
+
+# Copiar e construir o addon primeiro
+COPY docker/addon ./addon
+WORKDIR /usr/src/app/addon
+RUN npm install && \
+    npm run build
+
+# Configurar a API
+WORKDIR /usr/src/app/api
+RUN mkdir -p lib/Linux logs
+
+# Copiar arquivos da API e configuração ACBr
+COPY docker/api/* ./
+COPY acbr.ini ./
+
+# Atualizar o package.json para usar o caminho correto do addon
+RUN sed -i 's|"file:../acbr-cep-addon"|"file:../addon"|g' package.json
+
+# Instalar dependências da API
 RUN npm install
 
-# Create startup script
-RUN echo '#!/bin/bash\n\
-export DISPLAY=:99\n\
-Xvfb :99 -screen 0 1024x768x16 &\n\
-sleep 1\n\
-echo "Testing network connectivity..."\n\
-curl -v https://viacep.com.br/ws/37200645/json/\n\
-echo "Starting ACBr test..."\n\
-node test.js 2>logs/debug.log' > /usr/src/app/start.sh && \
-chmod +x /usr/src/app/start.sh
+# Copiar a biblioteca do ACBr
+RUN mkdir -p lib/Linux && \
+    cp ../addon/lib/Linux/libacbrcep64.so lib/Linux/ && \
+    chmod +x lib/Linux/libacbrcep64.so
 
-CMD ["/usr/src/app/start.sh"]
+# Criar script de inicialização
+RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1280x1024x24 -ac +extension GLX +render -nolisten tcp -nolisten unix &> xvfb_warning_dump.txt & npm test' > start.sh && \
+    chmod +x start.sh
+
+# Comando para executar o teste
+CMD ["./start.sh"]
 

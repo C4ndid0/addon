@@ -1,0 +1,20 @@
+{
+  "name": "@acbr/cep",
+  "version": "1.0.0",
+  "description": "API para consulta de CEP usando ACBrLibCEP",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@acbr/cep-addon": "file:../acbr-cep-addon"
+  },
+  "keywords": [
+    "cep",
+    "acbr",
+    "brasil",
+    "endereco"
+  ],
+  "author": "Lucas Candido",
+  "license": "MIT"
+}
