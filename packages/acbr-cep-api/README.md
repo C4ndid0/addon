@@ -2,12 +2,6 @@
 
 Este projeto implementa uma solução para consulta de CEP utilizando Node.js e ACBrLibCEP, com suporte a ambiente Linux através de containerização Docker.
 
-## Pré-requisitos
-
-- Docker
-- Node.js 18 ou superior (para desenvolvimento)
-- Python 3 (para build)
-- make e gcc (para build)
 
 ## Instalação
 
